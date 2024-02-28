@@ -31,3 +31,102 @@ We need to develop a CI/CD pipeline to automate the software development, testin
 - Integrate Docker with Ansible and write the playbook
 - Deploy artifacts to the Kubernetes cluster
 - Monitor resources using Grafana.
+
+## Task 1: Clone the project from the GitHub link shared in resources to your local machine. Build the code using Maven commands.
+
+### Setup Project
+
+> **Important Note:** All commands below should be run from the root directory.
+
+- To achieve this task first of all, download the provided Java Source Code into on my Local PC and then created a GitHub Repository and uploaded all the project files to the repo.
+  ![Github repository CI/CD for Retail Company](assests/github-repo.png)
+
+- Launch an EC2 Linux instance (type: t2.micro) named retail-app-master.
+  ![AWS EC2 retail-app-master INSTANCE](assests/retail-app-master-instance.png)
+
+- Connect to retail-app-pro server using local terminal and installed git to retail-app-master instance.
+
+  `sudo apt-get install git`
+
+- Clone the repository using git clone command as shown below to clone the repo from my Github to my Amazon EC2 Linux machine.
+
+  `git clone https://github.com/robinucar/CI-CD-PIPELINE_for_Retail_Company.git`
+
+- Install java to my EC2 retail-app-master instance.
+
+  ```
+   #To update the machine
+      sudo apt update
+    #To install java
+      sudo apt install openjdk-11-jdk -y
+  ```
+
+- Install Jenkins
+
+  - To install jenkins go to the website [Jenkins](https://pkg.jenkins.io/debian-stable/) and then select “debian-stable/”for a stable version of jenkins. Follow the procedure to install jenkins.
+
+    ```sudo wget -O /usr/share/keyrings/jenkins-keyring.asc \
+      https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+
+      # Then add a Jenkins apt repository entry:
+
+      echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
+      https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
+      /etc/apt/sources.list.d/jenkins.list > /dev/null
+
+      # Update your local package index, then finally install Jenkins:
+
+        sudo apt-get update
+        sudo apt-get install fontconfig openjdk-11-jre
+        sudo apt-get install jenkins
+    ```
+
+  - Start jenkins using the command:
+
+    ```
+    sudo systemctl start jenkins
+    sudo systemctl enable jenkins
+    sudo systemctl status jenkins
+    ```
+
+- Install Maven which will be used to Compile, Test and Package the Code. Run the following commands to install maven
+
+  ```
+    sudo apt update
+    sudo apt install maven
+    mvn -version
+  ```
+
+  ![Maven version](assests/mvn-version.png)
+
+**Now all the setup required is done. We need to start to building.**
+
+### Building process
+
+1. Navigate to the directory in which the source code and files are and then run the command below:
+
+```
+  cd CI-CD-PIPELINE_for_Retail_Company/
+  mvn compile
+```
+
+![mvn build](assests/mvn-build.png)
+
+2. Testing the code: To test the code go to directory which the source code and files are and then run the command below:
+
+`mvn test`
+
+![mvn test](assests/mvn-test.png)
+
+3. Packaging the code: To package the code go to directory which the source code and files are and then run the command below:
+
+`mvn package`
+
+![mvn package](assests/mvn-package.png)
+
+**_War File Created_**
+
+The result output, the war file file created in the target folder is as shown below image.
+![war file created package](assests/warfile.png)
+
+**_ END OF TASK 1 _**
