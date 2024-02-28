@@ -130,3 +130,109 @@ The result output, the war file file created in the target folder is as shown be
 ![war file created package](assests/warfile.png)
 
 **_ END OF TASK 1 _**
+
+## Task 2: Login to Jenkins and start to create build pipeline containing the jobs.
+
+1.  Log in to Jenkins
+
+- Jenkins can be accessed over the browsers through the port number 8080. Take the public ip address from the EC2 Instance and paste the code below on the browser.
+
+```
+  public IP address:8080
+  # in my case
+    13.40.17.107:8080
+```
+
+![Jenkins login](assests/jenkins-login.png)
+
+**Get the password, run the code below on your terminal.**
+
+`cat /var/lib/jenkins/secrets/initialAdminPassword`
+
+Then copy the password and paste to administrator password of Jenkins login page. Follow the promts until the dashboard access is fully set.
+
+2. The next step is to set up the necessary tools with Jenkins: Maven, Java, and Git.
+   To do this, go to the Jenkins dashboard > Manage Jenkins > Tools.
+
+- Use the command below to find the JAVA_HOME.
+
+```
+  update-alternatives --config java
+```
+
+![java home](assests/java-home.png)
+
+**The selected part of output is JAVA_HOME**
+
+- Copy the JAVA_HOME address as shown in the image above, then paste it into the Jenkins JDK installations tool..
+  ![Java-Home-Jenkins](assests/Jenkins_java_home.png)
+
+- For Git Integration we do need to make any changes, we work with the default settings.
+
+- Maven has already been installed through the CLI. The MAVEN_HOME from the selected part of the output below should be copied, and then pasted into the 'MAVEN_HOME' input field in the Jenkins Maven tool. Then click 'Save'.
+  ![maven home](assests/maven-home.png)
+  ![maven home jenkins](assests/maven-jenkins.png)
+
+3. After the tools have been set up, the jobs are now ready to be started.
+
+- Compile Job:
+  The first job is the Compile Job, serving as the upstream job for the Test Job, which in turn becomes the upstream job for the Package Job. Additionally, the Compile Job is scheduled to trigger a build every hour.
+
+  - On Jenkins Dashboard click New item > Job name > Select freestyle project and click OK.
+    ![1.compile](assests/first-job.png)
+
+  - Go to source code management under git section to add the repository URL:
+    [https://github.com/robinucar/CI-CD-PIPELINE_for_Retail_Company/](https://github.com/robinucar/CI-CD-PIPELINE_for_Retail_Company/)
+
+    No credentials are required because it’s a public repo.
+
+    **_ Branches to build should be main _**
+
+    Then click Save
+
+    ![1.job](assests/first-job-pt1.png)
+
+  - Next, navigate to the build steps and choose 'Invoke top-level Maven target.'
+
+    - Under "Maven version," choose "mymaven," then set the command as "compile" under Goals, and finally, save the changes.
+      ![1.job-nav](assests/first-job-pt2.png)
+
+  - Now, we are prepared to compile our source code. Click 'Build Now' on the dashboard, and the successful compile job output will be displayed as shown below:
+    ![1.job-log](assests/first-job-log.png)
+
+- Test Job:
+  Next, we proceed to test the code using the same steps as above, with the only difference being that the goal in this case is 'test'.
+
+  Navigate to build triggers to connect the test as a downstream job of the Compile job. This means that unit testing will be conducted immediately after the compile job is completed.
+
+  To do this, go to 'Build Triggers' and select 'Build after other projects are built'. In the 'Projects to watch' field, type in the upstream job '1.Compile', then save and build the job.
+
+  ![test-job-1](assests/test-job-pt1.png)
+  ![test-job-2](assests/test-job-pt2.png)
+
+- Package Job:
+  Now, the next step is to package the code into artifacts. Follow the same procedure as above, with the only difference being that the 'Goal' in this case is 'package'.
+
+  Additionally, go to 'Build Triggers' and select 'Build after other projects are built'. In the 'Projects to watch' field, type in the upstream job as '2.Test', then save and build the job. The output is as shown below:
+
+  ![package-job-1](assests/package-job-pt1.png)
+  ![package-job-2](assests/package-job-pt2.png)
+
+- Create a build pipeline:
+  To visualize all the jobs as a pipeline, we need to download the Build Pipeline plugin.
+
+1. Go to "Manage Jenkins" > "Manage Plugins".
+2. Search for the "Build Pipeline" plugin and select it.
+3. Install the plugin without restarting Jenkins.
+4. After installing the plugin:
+
+Return to the dashboard.
+
+1. Click the plus (+) sign to configure the pipeline.
+2. Give a name to the pipeline (e.g., "Retail-app-Pipeline").
+   Select "Build Pipeline View".
+   Click "OK".
+
+![Build Pipeline](assests/build-pipeline.png)
+
+**_ END OF TASK 2 _**
