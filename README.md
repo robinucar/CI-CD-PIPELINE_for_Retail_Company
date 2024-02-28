@@ -41,7 +41,7 @@ We need to develop a CI/CD pipeline to automate the software development, testin
 - To achieve this task first of all, download the provided Java Source Code into on my Local PC and then created a GitHub Repository and uploaded all the project files to the repo.
   ![Github repository CI/CD for Retail Company](assests/github-repo.png)
 
-- Launch an EC2 Linux instance (type: t2.micro) named retail-app-master.
+- Launch an EC2 Linux instance (type: t2.micro) named retail-app-master. set the security group rule to allow all traffic from anywhere and create the instance.
   ![AWS EC2 retail-app-master INSTANCE](assests/retail-app-master-instance.png)
 
 - Connect to retail-app-pro server using local terminal and installed git to retail-app-master instance.
@@ -143,6 +143,9 @@ The result output, the war file file created in the target folder is as shown be
     13.40.17.107:8080
 ```
 
+**\_To resolve any connection issues, ensure that you add custom TCP port 8080 to the inbound rules of the security group.**
+![inbound-rules](assests/inbound-rules.png)
+
 ![Jenkins login](assests/jenkins-login.png)
 
 **Get the password, run the code below on your terminal.**
@@ -236,3 +239,50 @@ Return to the dashboard.
 ![Build Pipeline](assests/build-pipeline.png)
 
 **_ END OF TASK 2 _**
+
+## Task 3: Set up a master-slave node to distribute the tasks in the pipeline.
+
+The primary server, known as the master machine, hosts Jenkins and manages various tasks such as configurations, build steps, SCM, and triggers. These tasks are created on the master machine and can be assigned to specific machines for execution. The console output of jobs executed on slave machines is visible on the master machine.
+
+Both the master and slave machines should have Java versions 11 and 17 installed. If a slave machine is of the Amazon Linux type, it connects to the master via SSH.
+
+Slave machines are virtual machines (VMs) running any operating system without Jenkins installed. Their primary function is to receive tasks from the master and execute them. All necessary tools required for the tasks must be installed on the slave machines. Additionally, an empty directory is created on each slave machine to serve as the workspace for the tasks.
+
+To create a slave machine, navigate to AWS, create a new instance named "JenkinsSlave" with , Ubuntu use an existing key pair, set the security group rule to allow all traffic from anywhere, create the instance, and connect to the instance CLI.
+
+![Slave-instance](assests/slave-instance.png)
+
+The following installations are required:
+
+```
+  # Update the package index and install Java OpenJDK 11
+    sudo apt update
+    sudo apt install openjdk-11-jdk -y
+
+  # Install Git
+    sudo apt install git -y
+
+   # Install Maven
+    sudo apt install maven -y
+```
+
+- Setting Up Slave
+  Navigate to "Manage Jenkins" > "Manage Nodes and Clouds" > Click on the "+ New Node" button > Provide a name for the node: "Slave" > Select "Permanent Agent" > Click on the "Create" button.
+
+![Cretae a slave Node](assests/create-slave-node.png)
+
+- Configure the node settings as shown in the images below:
+  ![Slave Node Configuration](assests/slave-node-conf.png)
+  ![Slave Node Launch Method](assests/slave-node-launch.png)
+  ![Slave Node Tools](assests/slave-node-tool.png)
+  Then click 'Save'.
+
+- Finally Root Directory for Jenkins to Store temporary data on Slave.
+  ![Slave-machine-output](assests/slave-machine-output.png)
+
+- Now we should be able to see all joba console outputs on the slave machine.
+  ![Slave-compile-job](assests/slave-compile.png)
+  ![Slave-test-job](assests/slave-test.png)
+  ![Slave-package-job](assests/slave-package.png)
+
+**_ END OF TASK 3 _**
