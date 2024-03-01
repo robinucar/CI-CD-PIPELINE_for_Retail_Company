@@ -286,3 +286,78 @@ The following installations are required:
   ![Slave-package-job](assests/slave-package.png)
 
 **_ END OF TASK 3 _**
+
+## Task 4: Compose a Dockerfile. Generate an image and container on the Docker host. Establish integration between the Docker host and Jenkins. Construct a CI/CD job on Jenkins to facilitate building and deploying within a container.
+
+1. Refine the package job established in step 1 of task 2 to generate a Docker image.
+2. Incorporate code into the Docker image to transfer the WAR file to the Tomcat server and then proceed with building the image.
+
+- The Dockerfile is being created using a Tomcat image sourced from the Docker Hub Repository.
+  ![Slave-package-job](assests/Tomcat.png)
+
+- The WAR file has already been obtained from the 3.package Job.
+- I have copied the WAR file from the Package Job folder to my home folder and composed the Dockerfile as illustrated below:
+  ![Warfile and Dockerfile](assests/warfile-dockerfile.png)
+
+  ### Creating Dockerfile on Jenkins 3.package Job.
+
+  - On Dockerfile Firstly, the latest Tomcat image is being used in the FROM command. Then, the WAR file is being added to the Tomcat $CATALINA_HOME folder, which is located at /usr/local/tomcat/webapps.
+
+  - The steps below are executed subsequent to the Maven task of 3.packaging, thereby enhancing the Job.
+
+    1. Execute a Shell Command Step in Jenkins:
+
+    - Create a new directory at the home location (where the war file will be stored).
+
+    2. Move the "ABCtechnologies-1.0.war" file to the "warfile" directory:
+
+    - Move the "ABCtechnologies-1.0.war" file to the newly created "warfile" directory.
+
+    3. Create a Dockerfile as shown in the screenshot below:
+
+    - Follow the instructions provided in the screenshot to create a Dockerfile.
+
+    4. Run the Docker build command to build the image:
+
+    - Execute the Docker build command to build the Docker image based on the Dockerfile.
+
+    5. Tag the image with my Docker repository:
+
+    - After building the image, tag it with the appropriate name for Docker repository.
+
+  - **_The Docker installation is required on the slave machine: The following commands must be executed on the slave machine._**
+
+    ```
+    # 1. Update the package index:
+      sudo apt update
+    # 2. Install necessary packages to allow apt to use a repository over HTTPS:
+      sudo apt install apt-transport-https ca-certificates curl software-properties-common
+    # 3. Add Docker's official GPG key:
+      curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+    # 4. Add Docker repository to APT sources:
+      sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+    # 5. Update the package index again:
+      sudo apt update
+    # 6. Install Docker:
+      sudo apt install docker-ce
+    # 7. Verify that Docker is installed correctly:
+      sudo docker --version
+
+    ```
+
+    **Dockerfile**
+    ![Dockerfile](assests/Dockerfile.png)
+
+**CONSOLE OUTPUT**
+![Console output part 1](assests/console-output-package-pt1.png)
+![Console output part 2](assests/console-output-package-pt2.png)
+![Console output part 3](assests/console-output-package-pt3.png)
+![Console output part 4](assests/console-output-package-pt4.png)
+
+- After the image has been pushed, it is downloaded to the slave machine for testing whether the application can be accessed or not.
+  ![Docker Image and container](assests/slave-test-image.png)
+- The final step involves testing the container on the browser, ensuring to edit inbound rules to include the port address of the Docker container.
+  ![inbound-rules](assests/inbound-rules-slave-docker.png)
+- "http://slave-machine-public-ip-address:3000/ABCtechnologies-1.0/"
+  ![browser](assests/browser-test.png)
+  **_ END OF TASK 4 _**
