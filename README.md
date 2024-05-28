@@ -361,3 +361,189 @@ The following installations are required:
 - "http://slave-machine-public-ip-address:3000/ABCtechnologies-1.0/"
   ![browser](assests/browser-test.png)
   **_ END OF TASK 4 _**
+
+## Task 5: Integrate Docker and Kubernetes
+
+1. Install Kubernetes to both Master and Slave machine.
+   ![kubernetes-intalled](assests/Kubernetes_installed.png)
+2. Print join command on master machine using kubeadm
+
+```
+  sudo kubeadm token create --print-join-command
+```
+
+![join-command](assests/print_joint_command.png)
+
+3. Connect slave machine to master machine using kubeadm join command.
+   ![slave-joined](assests/slave_joined.png)
+
+- Following the installation of Kubernetes and establishing connections between the Master and Node instances, I proceeded to generate manifest files for the Service and Deployment to verify the functionality of the setup.
+
+#### Manifests Files
+
+1. Service Manifests File:
+   Service Manifests File should cover below information
+
+- apiVersion: Specifies the version of the Kubernetes API we're using.
+- kind: Defines the type of Kubernetes resource.
+- metadata: Contains metadata about the Service.
+- spec: Specifies the desired state for the Service.
+- type: Defines the type of Service.
+- selector: Specifies the Pods that Service should target.
+- ports: Specifies the ports that the Service should listen on.
+- port: The port on which the Service will listen within the cluster.
+- targetPort: The port on the Pods to which traffic will be forwarded.
+- nodePort: The port on each Node on which the Service will be accessible.
+
+Below is the Service Manifest File for RetailAppService.yml, covering the specified information:
+![RetailAppService](/assests/RetailAppService.png)
+
+After we defined and created RetailAppService.yml,
+
+```
+kubectl create -f RetailAppService.yml
+```
+
+when we run kubectl get services -o wide command we should see below output.
+
+- NAME: The name of the service.
+- TYPE: The type of service. In this case, ClusterIP and NodePort.
+- CLUSTER-IP: The cluster internal IP address assigned to the service.
+- EXTERNAL-IP: The external IP address, which is <none> for ClusterIP and NodePort services.
+- PORT(S): The ports exposed by the service, including the mapping from the service port to the target port.
+- AGE: The amount of time since the service was created.
+- SELECTOR: The labels used to select the pods targeted by the service.
+
+![service-output](assests/service-output.png)
+
+\*\* kubernetes: This is a system service created automatically by Kubernetes.
+
+2. Deployment Manifests File:
+   Deployment Manifests File should cover below information
+   ![deployment-manifests](assests/deployment-yml.png)
+
+- apiVersion: Specifies the version of the Kubernetes API we're using.
+- kind: Defines the type of Kubernetes resource.
+- metadata: Contains metadata about the Deployment.
+- name: The name of the Deployment.
+- spec: Specifies the desired state for the Deployment.
+- replicas: Specifies the number of Pod replicas that should be running at any given time.
+- selector: Defines how to identify the Pods that belong to this Deployment.
+- matchLabels: Specifies the labels that Pods must have to be managed by this Deployment.
+- type: The label used to match Pods.
+- template: Describes the Pods that will be created by the Deployment.
+- metadata: Contains metadata about the Pods, including their labels.
+- labels: The labels assigned to the Pods.
+- type: The label assigned to the Pods created by this Deployment.
+- spec: Specifies the desired state for the Pods.
+- containers: Specifies the containers that will run in the Pods.
+- name: The name of the container.
+- image: The container image to use.
+
+After we defined and created RetailAppDeployment.yml,
+
+```
+kubectl create -f RetailAppDeployment.yml
+```
+
+when we run kubectl get services -o wide command we should see below output.
+
+- NAME: The deployment is named retailappdeployment.
+- READY: All 3 out of 3 replicas are ready.
+- UP-TO-DATE: All 3 replicas are up-to-date.
+- AVAILABLE: All 3 replicas are available.
+- AGE: The deployment has been running for 7 days and 2 hours.
+
+```
+ ![deployment-output](/assests/deployments-yml-output.png)
+```
+
+- PODS running on the kubernetes cluster.
+  ![pods](/assests/pods.png)
+
+- Also when we run
+
+```
+kubectl get all -o wide
+```
+
+command, it provides comprehensive information about all Kubernetes resources in our current namespace, including pods, services, deployments, and replicasets.
+
+![get-all](/assests/get-all.png)
+
+At this point, Pods, Deployment, and Service have been successfully created via Kubernetes.
+
+When we check on the browser with our slave machine ip + port we should see our app is successfully running.
+
+![browser](/assests/apc-port.png)
+
+## Task 6: Using Prometheus, monitor resources such as CPU utilization (total usage, usage per core, and usage breakdown), memory, and network on the instance by providing endpoints on the local host. Install the Node Exporter and add its URL to the Prometheus targets. Use this data to log in to Grafana and create a dashboard displaying these metrics.
+
+#### Step 1: Install Prometheus and Grafana to master machine and Node Exporter top both master and slave machine and configure them.
+
+- Visit the Prometheus download page to get the latest version.
+
+  - I installed prometheus-2.45.5.darwin-amd64.tar.gz version
+  - Configure prometheus.service
+    ![prometheus.service](/assests/prometheus_service.png)
+
+- Install grafana on master machine and connect Grafana with Prometheus
+
+- Install Node exporter on the master and slave machines and configure node_exporter.service.
+  ![node_exporter.service](/assests/node_exporter_service.png)
+
+- Configure prometheus.yml to connect master and slave machine using node exporter.
+  ![prometheus.yml](/assests/prometheus_yml.png)
+
+#### Step 2: Open Prometheus and Grafana from the browser.
+
+- Prometheus
+
+  - master_public_ip:9090/targets
+
+- Grafana
+- master_public_ip:3000/
+
+**_ Ensure that you modify the inbound rules on EC2 instances to permit traffic from ports 9090 and 3000 _**
+
+![prometheus_browser](/assests/prometheus_browser.png)
+![grafana_browser](/assests/grafana_browser.png)
+
+#### Step 3: Once Grafana is accessed web interface Configure Prometheus as a Data Source. Navigate to Configuration > Data Sources and add Prometheus as a data source by providing the URL where your Prometheus instance is hosted.
+
+#### Step 4: Create a Dashboard: After adding Prometheus as a data source, navigate to the "+" icon on the left panel and select "Dashboard." Choose "Add new panel" and then select a visualization type, such as "Graph" or any other preferred visualization.
+
+#### Step 5: Query Prometheus Metrics: In the visualization panel, click on "Panel Title" and select "Edit." Here, you can input Prometheus queries to retrieve the metrics you wish to visualize. For instance, to fetch CPU usage, network usage etc...
+
+- FOR CPU USAGE
+
+  - Master CPU usage:
+    ![master cpu usage](/assests/master_cpu_total.png)
+  - Slave CPU usage:
+    ![slave cpu usage](/assests/slave_cpu_total.png)
+
+- FOR MEMORY USAGE
+
+  - Master Memory Usage:
+    ![master_memory_usage](/assests/memory_usage.png)
+
+- FOR NETWORK USAGE
+
+  - Master network usage:
+    ![network_master](/assests/network_master.png)
+    ![network_transmit_master](/assests/network_transmit_master.png)
+
+  - Slave network usage:
+    ![network_slave](/assests/network_slave.png)
+    ![network_transmit_slave](/assests/network_transmit_slave.png)
+
+## CONCLUSION
+
+The first phase of the project, aimed at acquiring data from the offline business store for analytics and prediction, has been successfully completed by Retail App. Utilizing the DevOps model, the team automated the development, deployment, and testing of servlets and HTML pages. This has led to the establishment of a more reliable, scalable, and efficient system that is easier to maintain. Retail App stands to benefit from several advantages, including:
+
+- Increased reliability: The automated build and deployment process ensure that the system remains up-to-date and error-free.
+
+- Improved scalability: The system can effortlessly scale up or down to accommodate fluctuating demand.
+- Enhanced performance: The automated testing process guarantees optimal system performance.
+- Reduced costs: Automated procedures save time and money by eliminating the need for manual intervention.
+- The team can be confident that the DevOps model will serve as a valuable asset for the company's continued growth and expansion.
